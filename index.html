@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SMS Quiz Game - Start Game</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+    }
+    input, select {
+      padding: 6px;
+      font-size: 16px;
+      margin-top: 5px;
+      width: 250px;
+    }
+    button {
+      margin-top: 20px;
+      padding: 10px 25px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    pre {
+      background-color: #f4f4f4;
+      padding: 15px;
+      margin-top: 25px;
+      max-width: 600px;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      border: 1px solid #ddd;
+    }
+  </style>
+</head>
+<body>
+  <h1>Start SMS Quiz Game</h1>
+  <form id="startGameForm">
+    <label>
+      Game Mode:
+      <select id="mode" name="mode">
+        <option value="1v1">1v1</option>
+        <option value="Group">Group</option>
+      </select>
+    </label>
+
+    <label>
+      Your National ID:
+      <input type="text" id="hostID" name="hostID" required />
+    </label>
+
+    <label>
+      Stake per Player (min 20):
+      <input type="number" id="stakePerPlayer" name="stakePerPlayer" min="20" required />
+    </label>
+
+    <label id="opponentLabel">
+      Opponent National ID (for 1v1):
+      <input type="text" id="opponentID" name="opponentID" />
+    </label>
+
+    <label id="maxPlayersLabel" style="display:none;">
+      Max Players (3-10 for Group):
+      <input type="number" id="maxPlayers" name="maxPlayers" min="3" max="10" />
+    </label>
+
+    <button type="submit">Start Game</button>
+  </form>
+
+  <pre id="result"></pre>
+
+  <script>
+    const modeSelect = document.getElementById('mode');
+    const opponentLabel = document.getElementById('opponentLabel');
+    const maxPlayersLabel = document.getElementById('maxPlayersLabel');
+
+    // Toggle input fields based on mode
+    modeSelect.addEventListener('change', () => {
+      if (modeSelect.value === '1v1') {
+        opponentLabel.style.display = 'block';
+        maxPlayersLabel.style.display = 'none';
+      } else {
+        opponentLabel.style.display = 'none';
+        maxPlayersLabel.style.display = 'block';
+      }
+    });
+
+    document.getElementById('startGameForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const mode = modeSelect.value;
+      const hostID = document.getElementById('hostID').value.trim();
+      const stakePerPlayer = Number(document.getElementById('stakePerPlayer').value);
+      const opponentID = document.getElementById('opponentID').value.trim();
+      const maxPlayers = Number(document.getElementById('maxPlayers').value);
+
+      const payload = {
+        action: 'startGame',
+        mode,
+        hostID,
+        stakePerPlayer,
+        opponentID: mode === '1v1' ? opponentID : null,
+        maxPlayers: mode === 'Group' ? maxPlayers : null,
+      };
+
+      try {
+        const response = await fetch('https://script.google.com/macros/s/AKfycbyUAScp_6JiRmKM4hWo2hidbQrZwUwU693JPlOpx_G3cble3yAizL75qqta-zvlyrlj/exec', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+
+        const data = await response.json();
+        document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+      } catch (err) {
+        document.getElementById('result').textContent = 'Error: ' + err.message;
+      }
+    });
+  </script>
+</body>
+</html>
